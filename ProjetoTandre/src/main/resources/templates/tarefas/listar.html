@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Tarefas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/tarefas">
+                <i class="bi bi-check2-square"></i> Gerenciador de Tarefas
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tarefas">Todas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tarefas?concluida=false">Pendentes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tarefas?concluida=true">Concluídas</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Mensagens de sucesso/erro -->
+        <div th:if="${mensagem}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> <span th:text="${mensagem}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="bi bi-list-task"></i> Lista de Tarefas</h4>
+                        <a href="/tarefas/novo" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Nova Tarefa
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${tarefas.isEmpty()}" class="text-center py-5">
+                            <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                            <p class="text-muted mt-3">Nenhuma tarefa encontrada.</p>
+                            <a href="/tarefas/novo" class="btn btn-primary">Criar Primeira Tarefa</a>
+                        </div>
+
+                        <div th:if="${!tarefas.isEmpty()}">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th width="5%">Status</th>
+                                            <th width="25%">Título</th>
+                                            <th width="40%">Descrição</th>
+                                            <th width="15%">Data Criação</th>
+                                            <th width="15%">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="tarefa : ${tarefas}" 
+                                            th:class="${tarefa.concluida} ? 'table-success' : ''">
+                                            <td>
+                                                <span th:if="${tarefa.concluida}" 
+                                                      class="badge bg-success">
+                                                    <i class="bi bi-check-circle"></i> Concluída
+                                                </span>
+                                                <span th:unless="${tarefa.concluida}" 
+                                                      class="badge bg-warning text-dark">
+                                                    <i class="bi bi-clock"></i> Pendente
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <strong th:text="${tarefa.titulo}"></strong>
+                                            </td>
+                                            <td>
+                                                <span th:text="${tarefa.descricao != null and !tarefa.descricao.isEmpty()} ? ${tarefa.descricao} : 'Sem descrição'"></span>
+                                            </td>
+                                            <td>
+                                                <small th:text="${#temporals.format(tarefa.dataCriacao, 'dd/MM/yyyy HH:mm')}"></small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <form th:action="@{/tarefas/{id}/toggle-status(id=${tarefa.id})}" 
+                                                          method="post" 
+                                                          style="display: inline;">
+                                                        <button type="submit" 
+                                                                th:class="${tarefa.concluida} ? 'btn btn-sm btn-warning' : 'btn btn-sm btn-success'"
+                                                                th:title="${tarefa.concluida} ? 'Marcar como Pendente' : 'Marcar como Concluída'">
+                                                            <i th:class="${tarefa.concluida} ? 'bi bi-x-circle' : 'bi bi-check-circle'"></i>
+                                                        </button>
+                                                    </form>
+                                                    <a th:href="@{/tarefas/{id}/editar(id=${tarefa.id})}" 
+                                                       class="btn btn-sm btn-info text-white">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <form th:action="@{/tarefas/{id}/deletar(id=${tarefa.id})}" 
+                                                          method="post" 
+                                                          style="display: inline;"
+                                                          onsubmit="return confirm('Tem certeza que deseja deletar esta tarefa?');">
+                                                        <button type="submit" class="btn btn-sm btn-danger">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
